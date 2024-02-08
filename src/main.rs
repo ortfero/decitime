@@ -1,5 +1,6 @@
-use std::env;
 use chrono::prelude::*;
+use ctrlc;
+use std::{env, io::{self, Write}, thread, time::Duration, process};
 
 mod decitime;
 use decitime::DeciTime;
@@ -10,25 +11,51 @@ const MAN_PAGE: &str =
   \tdecitime - convert local time to decimal time\n\
   \n\
   SYNOPSIS\n\
-  \tdecitime [hh:mm:ss]\n\
+  \tdecitime [OPTIONhh:mm:ss]\n\
   \n\
   DESCRPTION\n\
-  \tConvert local time to decimal time, \
-  assuming each day is 25 hours * 40 minutes * 100 seconds\n";
+  \tConvert curent local time to decimal time, \
+  assuming each day is 100 hours * 100 minutes * 10 seconds\n\
+  \t-c, --continue\n\
+  \t\tprint decimal time continuously (press Ctrl+C to quit)\n\
+  \thh:mm:ss\n
+  \t\tconvert specified day time to decimal time\n";
 
+fn print_time_continuosly() {
+  ctrlc::set_handler(|| {
+    process::exit(0);
+  })
+  .expect("Error setting Ctrl-C handler");  
+  loop {
+    print!("{}", DeciTime::from(Local::now()));
+    io::stdout().flush().unwrap();
+    thread::sleep(Duration::from_millis(1));
+    print!("\r");
+  }
+}
+
+
+fn convert_local_time(hms: &str) {
+  let naive_time = NaiveTime::parse_from_str(hms, "%H:%M:%S")
+    .expect("Provide local time as HH:MM:SS");
+  println!("{}", DeciTime::from(naive_time));
+}
+
+
+fn handle_argument() {
+  let arg = env::args()
+    .nth(1)
+    .expect("Provide option");
+  match arg.as_str() {
+    "-c" | "--continue" => print_time_continuosly(),
+    _ => convert_local_time(arg.as_str())
+  };
+}
 
 fn main() {
-  let args_count = env::args().count();
-  if args_count == 1 {
-  	println!("{}", DeciTime::from(Local::now()));
-  } else if args_count == 2 {
-  	let arg = env::args()
-  		.nth(1)
-  		.expect("Provide local time");
-  	let naive_time = NaiveTime::parse_from_str(&*arg, "%H:%M:%S")
-  		.expect("Provide local time as HH:MM:SS");
-  	println!("{}", DeciTime::from(naive_time));	  
-  } else {
-  	eprintln!("{}", MAN_PAGE);
+  match env::args().count() {
+    1 => println!("{}", DeciTime::from(Local::now())),
+    2 => handle_argument(),
+    _ => eprintln!("{}", MAN_PAGE)
   }
 }

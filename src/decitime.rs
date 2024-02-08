@@ -10,8 +10,8 @@ pub struct DeciTime {
 const SECS_PER_MINUTE: u32 = 60;
 const MINUTES_PER_HOUR: u32 = 60;
 const SECS_PER_HOUR: u32 = SECS_PER_MINUTE * MINUTES_PER_HOUR;
-const DECI_SECS_PER_MINUTE: u32 = 100;
-const DECI_MINUTES_PER_HOUR: u32 = 40;
+const DECI_SECS_PER_MINUTE: u32 = 10;
+const DECI_MINUTES_PER_HOUR: u32 = 100;
 const DECI_SECS_PER_HOUR: u32 = DECI_MINUTES_PER_HOUR * DECI_SECS_PER_MINUTE;
 
 impl DeciTime {
@@ -46,7 +46,7 @@ impl From<NaiveTime> for DeciTime {
   
 impl fmt::Display for DeciTime {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-      write!(f, "{:02}:{:02}:{:02}",
+      write!(f, "{:02}:{:02}:{}",
           self.hour, self.minute, self.second)
   }
 }
