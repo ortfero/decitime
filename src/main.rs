@@ -29,7 +29,7 @@ fn print_time_continuosly() {
   loop {
     print!("{}", DeciTime::from(Local::now()));
     io::stdout().flush().unwrap();
-    thread::sleep(Duration::from_millis(1));
+    thread::sleep(Duration::from_millis(10));
     print!("\r");
   }
 }
