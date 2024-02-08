@@ -1,5 +1,4 @@
-use std::env;
-use std::fmt;
+use std::{convert::From, env, fmt};
 use chrono::prelude::*;
 
 const SECS_PER_MINUTE: u32 = 60;
@@ -11,7 +10,7 @@ const DECI_SECS_PER_HOUR: u32 = DECI_MINUTES_PER_HOUR * DECI_SECS_PER_MINUTE;
 
 const MAN_PAGE: &str =
   "NAME\n\
-  \tdecitime - convert to decimal time\n\
+  \tdecitime - convert local time to decimal time\n\
   \n\
   SYNOPSIS\n\
   \tdecitime [hh:mm:ss]\n\
@@ -29,7 +28,6 @@ struct DeciTime {
 
 
 impl DeciTime {
-
   pub fn from_hms(hh: u32, mm: u32, ss: u32) -> Self {
   	let day_secs = hh * SECS_PER_HOUR
   		+ mm * SECS_PER_MINUTE
@@ -42,15 +40,20 @@ impl DeciTime {
   	let second = hour_secs % DECI_SECS_PER_MINUTE;
   	Self{hour, minute, second}
   }
+}
 
-  pub fn from_local_time(time: DateTime<Local>) -> Self {
-  	DeciTime::from_hms(time.hour(), time.minute(), time.second())
-  }
 
-  pub fn from_naive_time(time: NaiveTime) -> Self {
-  	DeciTime::from_hms(time.hour(), time.minute(), time.second())
+impl From<DateTime<Local>> for DeciTime {
+  fn from(time: DateTime<Local>) -> Self {
+    DeciTime::from_hms(time.hour(), time.minute(), time.second())
   }
-  
+}
+
+
+impl From<NaiveTime> for DeciTime {
+  fn from(time: NaiveTime) -> Self {
+    DeciTime::from_hms(time.hour(), time.minute(), time.second())
+  }
 }
 
 
@@ -65,14 +68,14 @@ impl fmt::Display for DeciTime {
 fn main() {
   let args_count = env::args().count();
   if args_count == 1 {
-  	println!("{}", DeciTime::from_local_time(Local::now()));
+  	println!("{}", DeciTime::from(Local::now()));
   } else if args_count == 2 {
   	let arg = env::args()
   		.nth(1)
   		.expect("Provide local time");
   	let naive_time = NaiveTime::parse_from_str(&*arg, "%H:%M:%S")
   		.expect("Provide local time as HH:MM:SS");
-  	println!("{}", DeciTime::from_naive_time(naive_time));	  
+  	println!("{}", DeciTime::from(naive_time));	  
   } else {
   	eprintln!("{}", MAN_PAGE);
   }
